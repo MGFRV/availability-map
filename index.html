@@ -29,6 +29,36 @@ const regionCoords = {
 };
 
 fetch(dataUrl)
+  .then(r => {
+    console.log('Fetch status:', r.status);
+    return r.json();
+  })
+  .then(rows => {
+    console.log('Rows:', rows);
+
+    const counts = {};
+
+    rows.forEach(r => {
+      if (!r.available) return;
+      counts[r.region] = (counts[r.region] || 0) + 1;
+    });
+
+    console.log('Counts:', counts);
+
+    const points = Object.entries(counts)
+      .filter(([region]) => regionCoords[region])
+      .map(([region, count]) => {
+        const [lat, lon] = regionCoords[region];
+        return [lat, lon, count];
+      });
+
+    console.log('Points:', points);
+
+    drawMap(points);
+  });
+
+  
+fetch(dataUrl)
   .then(r => r.json())
   .then(rows => {
     const counts = {};
@@ -67,3 +97,4 @@ function drawMap(points) {
 
 </body>
 </html>
+
