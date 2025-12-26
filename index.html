@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Availability Map</title>
+  <script src="https://api-maps.yandex.ru/2.1/?lang=en_US"></script>
+  <script src="https://yandex.st/heatmap/0.2/heatmap.min.js"></script>
+  <style>
+    #map { width: 100%; height: 500px; }
+  </style>
+</head>
+<body>
+
+<h2>Available companies by state</h2>
+<div id="map"></div>
+
+<script>
+const dataUrl = 'https://mgfrv.github.io/mfg-heatmap/map.json';
+
+const regionCoords = {
+  "California": [36.7783, -119.4179],
+  "Texas": [31.9686, -99.9018],
+  "Florida": [27.6648, -81.5158],
+  "New York": [43.0000, -75.0000],
+  "Illinois": [40.0000, -89.0000],
+  "Pennsylvania": [41.2033, -77.1945],
+  "Ohio": [40.4173, -82.9071],
+  "Georgia": [32.1656, -82.9001]
+};
+
+fetch(dataUrl)
+  .then(r => r.json())
+  .then(rows => {
+    const counts = {};
+
+    rows.forEach(r => {
+      if (!r.available) return;
+      counts[r.region] = (counts[r.region] || 0) + 1;
+    });
+
+    const points = Object.entries(counts)
+      .filter(([region]) => regionCoords[region])
+      .map(([region, count]) => {
+        const [lat, lon] = regionCoords[region];
+        return [lat, lon, count];
+      });
+
+    drawMap(points);
+  });
+
+function drawMap(points) {
+  ymaps.ready(() => {
+    const map = new ymaps.Map("map", {
+      center: [39.8283, -98.5795],
+      zoom: 4
+    });
+
+    const heatmap = new ymaps.Heatmap(points, {
+      radius: 40,
+      opacity: 0.7
+    });
+
+    heatmap.setMap(map);
+  });
+}
+</script>
+
+</body>
+</html>
